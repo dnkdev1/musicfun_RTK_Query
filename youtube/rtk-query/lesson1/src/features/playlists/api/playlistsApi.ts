@@ -8,8 +8,7 @@ import type {
   UpdatePlaylistArgs,
 } from '@/features/playlists/api/playlistsApi.types.ts'
 
-// `createApi` - функция из `RTK Query`, позволяющая создать объект `API`
-// для взаимодействия с внешними `API` и управления состоянием приложения
+
 export const playlistsApi = createApi({
   // `reducerPath` - имя куда будут сохранены состояние и экшены для этого `API`
   reducerPath: 'playlistsApi',
@@ -24,12 +23,10 @@ export const playlistsApi = createApi({
       return headers
     },
   }),
-  // `endpoints` - метод, возвращающий объект с эндпоинтами для `API`, описанными
-  // с помощью функций, которые будут вызываться при вызове соответствующих методов `API`
-  // (например `get`, `post`, `put`, `patch`, `delete`)
+
+  tagTypes: ['Playlist'],
+
   endpoints: (build) => ({
-    // Типизация аргументов (<возвращаемый тип, тип query аргументов (`QueryArg`)>)
-    // `query` по умолчанию создает запрос `get` и указание метода необязательно
     fetchPlaylists: build.query<PlaylistsResponse, FetchPlaylistsArgs>({
       query: () => {
         return {
@@ -37,6 +34,7 @@ export const playlistsApi = createApi({
           url: `playlists`,
         }
       },
+      providesTags: ['Playlist'],
     }),
 
     createPlaylist: build.mutation<{ data: PlaylistData }, CreatePlaylistArgs>({
@@ -53,6 +51,7 @@ export const playlistsApi = createApi({
           },
         },
       }),
+      invalidatesTags: ['Playlist'],
     }),
 
     deletePlaylist: build.mutation<void, string>({
@@ -60,15 +59,8 @@ export const playlistsApi = createApi({
         url: `playlists/${playlistId}`,
         method: 'delete',
       }),
+      invalidatesTags: ['Playlist'],
     }),
-
-    // updatePlaylist: build.mutation<void, { playlistId: string; body: UpdatePlaylistArgs }>({
-    //   query: ({ playlistId, body }) => ({
-    //     url: `playlists/${playlistId}`,
-    //     method: 'put',
-    //     body,
-    //   }),
-    // }),
 
     updatePlaylist: build.mutation<void, { playlistId: string; body: UpdatePlaylistArgs }>({
       query: ({ playlistId, body }) => ({
@@ -85,10 +77,9 @@ export const playlistsApi = createApi({
           },
         },
       }),
+      invalidatesTags: ['Playlist'],
     }),
   }),
 })
 
-// `createApi` создает объект `API`, который содержит все эндпоинты в виде хуков,
-// определенные в свойстве `endpoints`
 export const { useFetchPlaylistsQuery, useCreatePlaylistMutation, useDeletePlaylistMutation, useUpdatePlaylistMutation } = playlistsApi
