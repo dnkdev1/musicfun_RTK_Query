@@ -1,5 +1,3 @@
-// Во избежание ошибок импорт должен быть из `@reduxjs/toolkit/query/react`
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type {
   CreatePlaylistArgs,
   FetchPlaylistsArgs,
@@ -7,24 +5,10 @@ import type {
   PlaylistsResponse,
   UpdatePlaylistArgs,
 } from '@/features/playlists/api/playlistsApi.types.ts'
+import { baseApi } from '@/app/api/baseApi.ts'
 
 
-export const playlistsApi = createApi({
-  // `reducerPath` - имя куда будут сохранены состояние и экшены для этого `API`
-  reducerPath: 'playlistsApi',
-  // `baseQuery` - конфигурация для `HTTP-клиента`, который будет использоваться для отправки запросов
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_BASE_URL,
-    headers: {
-      'API-KEY': import.meta.env.VITE_API_KEY,
-    },
-    prepareHeaders: (headers) => {
-      headers.set('Authorization', `Bearer ${import.meta.env.VITE_ACCESS_TOKEN}`)
-      return headers
-    },
-  }),
-
-  tagTypes: ['Playlist'],
+export const playlistsApi = baseApi.injectEndpoints({
 
   endpoints: (build) => ({
     fetchPlaylists: build.query<PlaylistsResponse, FetchPlaylistsArgs>({
