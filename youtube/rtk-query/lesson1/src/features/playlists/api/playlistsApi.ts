@@ -7,23 +7,24 @@ import type {
 } from '@/features/playlists/api/playlistsApi.types.ts'
 import { baseApi } from '@/app/api/baseApi.ts'
 import type { Images } from '@/common/types'
+import { playlistCreateResponseSchema, playlistsResponseSchema } from '@/features/playlists/model/playlists.schemas.ts'
+import { errorToast, withZodCatch } from '@/common/utils'
+import { imagesSchema } from '@/common/schemas/schemas.ts'
 
 
 export const playlistsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    fetchPlaylists: build.query<PlaylistsResponse, FetchPlaylistsArgs>({
-      query: (params) => ({ url: 'playlists', params }),
+    fetchPlaylists: build.query({
+      query: (params: FetchPlaylistsArgs) => ({ url: `playlists`, params }),
+      ...withZodCatch(playlistsResponseSchema),
+      skipSchemaValidation: process.env.NODE_ENV === 'production',
       providesTags: ['Playlist'],
     }),
-    // createPlaylist: build.mutation<{ data: PlaylistData }, CreatePlaylistArgs>({
-    //   query: (body) => ({ method: 'post', url: 'playlists', body }),
-    //   invalidatesTags: ['Playlist'],
-    // }),
 
-    createPlaylist: build.mutation<{ data: PlaylistData }, CreatePlaylistArgs>({
-      query: (body) => ({
-        method: 'post',
+    createPlaylist: build.mutation({
+      query: (body: CreatePlaylistArgs) => ({
         url: 'playlists',
+        method: 'post',
         body: {
           data: {
             type: 'playlists',
@@ -34,6 +35,7 @@ export const playlistsApi = baseApi.injectEndpoints({
           },
         },
       }),
+      ...withZodCatch(playlistCreateResponseSchema),
       invalidatesTags: ['Playlist'],
     }),
 
@@ -101,13 +103,15 @@ export const playlistsApi = baseApi.injectEndpoints({
     }),
 
     uploadPlaylistCover: build.mutation<Images, { playlistId: string; file: File }>({
-      query: ({ playlistId, file }) => {
+      query: ({ playlistId, file }: { playlistId: string; file: File }) => {
         const formData = new FormData()
         formData.append('file', file)
         return { method: 'post', url: `playlists/${playlistId}/images/main`, body: formData }
       },
+      ...withZodCatch(imagesSchema),
       invalidatesTags: ['Playlist'],
     }),
+
     deletePlaylistCover: build.mutation<void, { playlistId: string }>({
       query: ({ playlistId }) => ({ method: 'delete', url: `playlists/${playlistId}/images/main` }),
       invalidatesTags: ['Playlist'],
